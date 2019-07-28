@@ -12,7 +12,7 @@ import (
 	"github.com/kstenerud/go-vlq"
 )
 
-type Varpad vlq.Vlq
+type Varpad vlq.Rvlq
 
 // Calculate the appropriate padding for a given length and modulus.
 // A modulus less than 2 will always result in a padding of 0.
@@ -38,7 +38,7 @@ func (this Varpad) EncodeTo(buffer []byte) error {
 		return fmt.Errorf("Not enough bytes in buffer to store %v padding bytes (buffer size is %v)", this, len(buffer))
 	}
 	buffer = buffer[:int(this)]
-	length := vlq.Vlq(this)
+	length := vlq.Rvlq(this)
 	bytesWritten, err := length.EncodeTo(buffer)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func FillWithPadding(buffer []byte) {
 // length is fully decoded (i.e. it has encountered a byte with the high bit cleared).
 // This allows for progressive decoding of the length across multiple buffers.
 func (this *Varpad) DecodeFromBeginning(buffer []byte) (bytesDecoded int, isComplete bool) {
-	length := vlq.Vlq(*this)
+	length := vlq.Rvlq(*this)
 	bytesDecoded, isComplete = length.DecodeFrom(buffer)
 	*this = Varpad(length)
 	return bytesDecoded, isComplete
@@ -83,7 +83,7 @@ func DecodeFromBeginning(buffer []byte) (value Varpad, bytesDecoded int, isCompl
 // this decode function requires the entire padding sequence to be present in
 // the buffer.
 func (this *Varpad) DecodeFromEnd(buffer []byte) (bytesDecoded int, err error) {
-	length := vlq.Vlq(*this)
+	length := vlq.Rvlq(*this)
 	bytesDecoded, err = length.DecodeReversedFrom(buffer)
 	*this = Varpad(length)
 	return bytesDecoded, err
